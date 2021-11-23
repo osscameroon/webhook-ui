@@ -1,0 +1,14 @@
+# requests for the bot
+requests
+
+# format and lint of the code
+isort
+flake8
+black
+
+# For the telegram bot
+setuptools
+python-telegram-bot
+
+# To manage configurations
+configparser

@@ -1,0 +1,4 @@
+[conf]
+WEBHOOK_HOST = https://webhooks...../hooks
+WEBHOOK_TOKEN = --------------------------------------
+TELEGRAM_TOKEN = --------------------------------------
