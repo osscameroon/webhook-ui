@@ -21,10 +21,14 @@ def is_valid_command(update):
     return False
 
 
+def get_req(url):
+    return requests.get(url)
+
+
 def commands_callback(update, context):
     if is_authorized(update):
         time.sleep(1)
-        r = requests.get(f"{WEBHOOK_HOST}/commands?token={WEBHOOK_TOKEN}")
+        r = get_req(f"{WEBHOOK_HOST}/commands?token={WEBHOOK_TOKEN}")
 
         kb_markup = ReplyKeyboardMarkup(
             [[KeyboardButton(com.replace("/", "exec::"))] for com in r.json()]
@@ -41,15 +45,14 @@ def exec_callback(update, context):
         if is_authorized(update) and is_valid_command(update):
             time.sleep(1)
             expected_command = update.message.text.replace("exec::", "/")
+            command_url = f"{WEBHOOK_HOST}/{expected_command}?token={WEBHOOK_TOKEN}"
             msg = update.message.reply_text(
                 f"Checking your command {update.message.text}..."
             )
-            r = requests.get(f"{WEBHOOK_HOST}/commands?token={WEBHOOK_TOKEN}")
+            r = get_req(f"{WEBHOOK_HOST}/commands?token={WEBHOOK_TOKEN}")
             for com in r.json():
                 if com == expected_command:
-                    req = requests.get(
-                        f"{WEBHOOK_HOST}/{expected_command}?token={WEBHOOK_TOKEN}"
-                    )
+                    req = get_req(command_url)
                     escaped_text = req.text.replace("!", "\\!")
                     msg.edit_text(escaped_text, parse_mode="MarkdownV2")
                     break
