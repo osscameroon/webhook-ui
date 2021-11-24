@@ -9,9 +9,10 @@ from app.settings import AUTHORIZED_USERS, TELEGRAM_TOKEN, WEBHOOK_HOST, WEBHOOK
 
 
 def is_authorized(update):
-    user_name = update.message.from_user["username"]
-    if len(user_name) > 1 and user_name in AUTHORIZED_USERS:
-        return True
+    if update.message.chat.type == "private":
+        user_name = update.message.from_user["username"]
+        if len(user_name) > 1 and user_name in AUTHORIZED_USERS:
+            return True
     return False
 
 
