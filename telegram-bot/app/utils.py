@@ -2,17 +2,22 @@ import logging
 import time
 
 import requests
-from telegram import KeyboardButton, ReplyKeyboardMarkup
+from telegram import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 
 from app.settings import AUTHORIZED_USERS, TELEGRAM_TOKEN, WEBHOOK_HOST, WEBHOOK_TOKEN
 
 
-def is_authorized(update):
+def is_private(update):
     if update.message.chat.type == "private":
-        user_name = update.message.from_user["username"]
-        if len(user_name) > 1 and user_name in AUTHORIZED_USERS:
-            return True
+        return True
+    return False
+
+
+def is_authorized(update):
+    user_name = update.message.from_user["username"]
+    if len(user_name) > 1 and user_name in AUTHORIZED_USERS:
+        return True
     return False
 
 
@@ -27,7 +32,7 @@ def get_req(url):
 
 
 def commands_callback(update, context):
-    if is_authorized(update):
+    if is_authorized(update) and is_private(update):
         time.sleep(1)
         r = get_req(f"{WEBHOOK_HOST}/commands?token={WEBHOOK_TOKEN}")
 
@@ -41,9 +46,22 @@ def commands_callback(update, context):
         )
 
 
+def clean_commands_callback(update, context):
+    if is_authorized(update):
+        msg = context.bot.send_message(
+            chat_id=update.message.chat_id,
+            text="Keyboard Commands cleaned !",
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        time.sleep(1)
+        context.bot.delete_message(
+            chat_id=update.message.chat_id, message_id=msg.message_id
+        )
+
+
 def exec_callback(update, context):
     try:
-        if is_authorized(update) and is_valid_command(update):
+        if is_authorized(update) and is_valid_command(update) and is_private(update):
             time.sleep(1)
             expected_command = update.message.text.replace("exec::", "/")
             command_url = f"{WEBHOOK_HOST}/{expected_command}?token={WEBHOOK_TOKEN}"
@@ -62,7 +80,7 @@ def exec_callback(update, context):
 
 
 def start_callback(update, context):
-    if is_authorized(update):
+    if is_authorized(update) and is_private(update):
         time.sleep(1)
         context.bot.send_message(
             chat_id=update.message.chat_id,
@@ -71,7 +89,7 @@ def start_callback(update, context):
 
 
 def help_callback(update, context):
-    if is_authorized(update):
+    if is_authorized(update) and is_private(update):
         time.sleep(1)
         context.bot.send_message(
             chat_id=update.message.chat_id,
@@ -88,6 +106,7 @@ def set_callback():
 
     dispatcher.add_handler(CommandHandler("start", start_callback))
     dispatcher.add_handler(CommandHandler("commands", commands_callback))
+    dispatcher.add_handler(CommandHandler("clean", clean_commands_callback))
     dispatcher.add_handler(CommandHandler("help", help_callback))
     dispatcher.add_handler(MessageHandler(Filters.text, exec_callback))
 
