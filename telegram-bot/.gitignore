@@ -2,3 +2,4 @@ config.txt
 env
 .idea
 *__pycache__
+*.pyc

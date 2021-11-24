@@ -1,5 +1,7 @@
 # WebHook-TelegramBot
 
+Trigger your webhook from a telegram bot.
+
 ## Requirements
 - virtualenv
 - python (3.x is required)

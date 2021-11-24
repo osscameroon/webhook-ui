@@ -12,4 +12,3 @@ python-telegram-bot
 
 # To manage configurations
 configparser
-

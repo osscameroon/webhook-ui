@@ -12,6 +12,14 @@ from app.utils import get_req, is_authorized, is_private, is_valid_command
 
 
 def clean_msg(context: CCT, update: Update, msg: Message) -> None:
+    """
+    Clean previous message
+
+    :param context:
+    :param update:
+    :param msg:
+    :return:
+    """
     time.sleep(1)
     context.bot.delete_message(
         chat_id=update.message.chat_id, message_id=msg.message_id
@@ -19,6 +27,13 @@ def clean_msg(context: CCT, update: Update, msg: Message) -> None:
 
 
 def commands_callback(update: Update, context: CCT) -> None:
+    """
+    The command callback that will return a keyboard of commands
+
+    :param update:
+    :param context:
+    :return:
+    """
     if is_authorized(update) and is_private(update):
         time.sleep(1)
         r = get_req("/commands")
@@ -34,6 +49,13 @@ def commands_callback(update: Update, context: CCT) -> None:
 
 
 def clean_commands_callback(update: Update, context: CCT) -> None:
+    """
+    Clean the generated keyboard
+
+    :param update:
+    :param context:
+    :return:
+    """
     if is_authorized(update):
         msg = context.bot.send_message(
             chat_id=update.message.chat_id,
@@ -44,6 +66,13 @@ def clean_commands_callback(update: Update, context: CCT) -> None:
 
 
 def exec_callback(update: Update, context: CCT) -> None:
+    """
+    Try to execute the incomming command after validating that
+
+    :param update:
+    :param context:
+    :return:
+    """
     try:
         if is_authorized(update) and is_private(update):
             if is_valid_command(update):
@@ -64,6 +93,13 @@ def exec_callback(update: Update, context: CCT) -> None:
 
 
 def start_callback(update: Update, context: CCT) -> None:
+    """
+    The simple start callback to say welcome to the user
+
+    :param update:
+    :param context:
+    :return:
+    """
     if is_authorized(update) and is_private(update):
         time.sleep(1)
         context.bot.send_message(
@@ -73,6 +109,13 @@ def start_callback(update: Update, context: CCT) -> None:
 
 
 def help_callback(update: Update, context: CCT) -> None:
+    """
+    The help callback to list available command here
+
+    :param update:
+    :param context:
+    :return:
+    """
     if is_authorized(update) and is_private(update):
         time.sleep(1)
         context.bot.send_message(
@@ -85,6 +128,11 @@ def help_callback(update: Update, context: CCT) -> None:
 
 
 def set_callback() -> Updater:
+    """
+    The setter of all callback that will return an Updater
+
+    :return:
+    """
     updater = Updater(token=TELEGRAM_TOKEN)
     dispatcher = updater.dispatcher
 

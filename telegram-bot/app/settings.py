@@ -1,4 +1,3 @@
-# First, install configparser using "pip install configparser"
 import configparser as Conf
 from typing import List
 
