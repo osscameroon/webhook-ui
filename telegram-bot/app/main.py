@@ -1,4 +1,4 @@
-from app.utils import set_callback
+from app.callbacks import set_callback
 
 if __name__ == "__main__":
     updater = set_callback()
