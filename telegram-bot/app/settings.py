@@ -9,3 +9,4 @@ configParser.read(r"config.txt")
 WEBHOOK_HOST = configParser.get("conf", "WEBHOOK_HOST")
 WEBHOOK_TOKEN = configParser.get("conf", "WEBHOOK_TOKEN")
 TELEGRAM_TOKEN = configParser.get("conf", "TELEGRAM_TOKEN")
+AUTHORIZED_USERS = ["sanixdarker", "Franck_Mario", "elhmn42", "tericcabrel", "OumarT"]

@@ -1,63 +1,81 @@
+import logging
 import time
 
 import requests
 from telegram import KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 
-from app.settings import TELEGRAM_TOKEN, WEBHOOK_HOST, WEBHOOK_TOKEN
+from app.settings import AUTHORIZED_USERS, TELEGRAM_TOKEN, WEBHOOK_HOST, WEBHOOK_TOKEN
+
+
+def is_authorized(update):
+    user_name = update.message.from_user["username"]
+    if len(user_name) > 1 and user_name in AUTHORIZED_USERS:
+        return True
+    return False
+
+
+def is_valid_command(update):
+    if "exec::" in update.message.text and 50 > len(update.message.text) > 7:
+        return True
+    return False
 
 
 def commands_callback(update, context):
-    time.sleep(1)
-    r = requests.get(f"{WEBHOOK_HOST}/commands?token={WEBHOOK_TOKEN}")
+    if is_authorized(update):
+        time.sleep(1)
+        r = requests.get(f"{WEBHOOK_HOST}/commands?token={WEBHOOK_TOKEN}")
 
-    kb_markup = ReplyKeyboardMarkup(
-        [[KeyboardButton(com.replace("/", "exec::"))] for com in r.json()]
-    )
-    context.bot.send_message(
-        chat_id=update.message.chat_id,
-        text="Commands fetched successfully !",
-        reply_markup=kb_markup,
-    )
+        kb_markup = ReplyKeyboardMarkup(
+            [[KeyboardButton(com.replace("/", "exec::"))] for com in r.json()]
+        )
+        context.bot.send_message(
+            chat_id=update.message.chat_id,
+            text="Commands fetched successfully !",
+            reply_markup=kb_markup,
+        )
 
 
 def exec_callback(update, context):
-    expected_command = update.message.text.replace("exec::", "/")
-    if "exec::" in update.message.text and len(update.message.text) > 7:
-        msg = update.message.reply_text(
-            f"Checking your command {update.message.text}..."
-        )
-        time.sleep(1)
-        r = requests.get(f"{WEBHOOK_HOST}/commands?token={WEBHOOK_TOKEN}")
-        for com in r.json():
-            if com == expected_command:
-                req = requests.get(
-                    f"{WEBHOOK_HOST}/{expected_command}?token={WEBHOOK_TOKEN}"
-                )
-                escaped_text = req.text.replace("!", "\\!")
-                msg.edit_text(escaped_text, parse_mode="MarkdownV2")
-                break
-    else:
-        update.message.reply_text("Invalid command sent.")
+    try:
+        if is_authorized(update) and is_valid_command(update):
+            time.sleep(1)
+            expected_command = update.message.text.replace("exec::", "/")
+            msg = update.message.reply_text(
+                f"Checking your command {update.message.text}..."
+            )
+            r = requests.get(f"{WEBHOOK_HOST}/commands?token={WEBHOOK_TOKEN}")
+            for com in r.json():
+                if com == expected_command:
+                    req = requests.get(
+                        f"{WEBHOOK_HOST}/{expected_command}?token={WEBHOOK_TOKEN}"
+                    )
+                    escaped_text = req.text.replace("!", "\\!")
+                    msg.edit_text(escaped_text, parse_mode="MarkdownV2")
+                    break
+    except Exception as es:
+        logging.exception(f"[x] Error {es}")
 
 
 def start_callback(update, context):
-    time.sleep(1)
-    context.bot.send_message(
-        chat_id=update.message.chat_id,
-        text="Hello there, \n" + "Please hit /help to know more about me !",
-    )
+    if is_authorized(update):
+        time.sleep(1)
+        context.bot.send_message(
+            chat_id=update.message.chat_id,
+            text="Hello there, \nPlease hit /help to know more about me !",
+        )
 
 
 def help_callback(update, context):
-    time.sleep(1)
-    context.bot.send_message(
-        chat_id=update.message.chat_id,
-        text="Hello there, \n"
-        + "Am just a bot that will execute commands for your webhook !\n---\n"
-        + "/commands - Get list of your available commands.\n"
-        + "/help - help, list of telegram command.\n---\n",
-    )
+    if is_authorized(update):
+        time.sleep(1)
+        context.bot.send_message(
+            chat_id=update.message.chat_id,
+            text="Hello there, \n"
+            + "Am a bot that execute commands from your webhook !\n"
+            + "/commands - Get list of your available commands.\n"
+            + "/help - help, list of telegram command.\n---\n",
+        )
 
 
 def set_callback():
