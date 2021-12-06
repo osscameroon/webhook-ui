@@ -56,13 +56,15 @@ def clean_commands_callback(update: Update, context: CCT) -> None:
     :param context:
     :return:
     """
-    if is_authorized(update):
-        msg = context.bot.send_message(
-            chat_id=update.message.chat_id,
-            text="Keyboard Commands cleaned !",
-            reply_markup=ReplyKeyboardRemove(),
-        )
-        clean_msg(context, update, msg)
+    msg = context.bot.send_message(
+        chat_id=update.message.chat_id,
+        text="Keyboard Commands cleaned !",
+        reply_markup=ReplyKeyboardRemove(),
+    )
+    # we delete the bot message
+    clean_msg(context, update, msg)
+    # we delete the user message
+    clean_msg(context, update, update.message)
 
 
 def exec_callback(update: Update, context: CCT) -> None:
